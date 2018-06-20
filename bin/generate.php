@@ -36,6 +36,9 @@ define('PHPFHIR_GENERATE_CONFIG_FILE', 'PHPFHIR_GENERATE_CONFIG_FILE');
 
 $printHelp = false;
 $forceDelete = false;
+$keepInput = false;
+$verbose = false;
+$verbosity = \Psr\Log\LogLevel::ERROR;
 $configEnv = getenv(PHPFHIR_GENERATE_CONFIG_FILE);
 $configArg = '';
 $configDef = __DIR__.DIRECTORY_SEPARATOR.'config.php';
@@ -107,10 +110,14 @@ PHP-FHIR: Tools for creating PHP classes from the HL7 FHIR Specification
                         ex: ./bin/generate.sh --help
     --force:        Forcibly delete all pre-existing FHIR schema files and output files without being prompted [default: false]
                         ex: ./bin/generate.sh --force
+    --keep-input:   Keep existing FHIR schema files without being prompted [default: false]
+                        ex: ./bin/generate.sh --keep-input
     --config:       Specify location of config [default: {$configDef}]
                         ex: ./bin/generate.sh --config path/to/file
     --versions:     Comma-separated list of specific versions to parse from config
                         ex: ./bin/generate.sh --versions DSTU1,DSTU2
+    --verbose/-v:   Be verbose; output generator log to stdout
+                        use -vv or -vvv to include more details.
 
 - Configuration:
     There are 3 possible ways to define a configuration file for this script to use:
@@ -177,12 +184,30 @@ if ($argc > 1) {
                 $forceDelete = true;
                 break;
 
+            case '--keep-input':
+            case '-i':
+                $keepInput = true;
+                break;
+
             case '--config':
                 $configArg = trim($argv[++$i]);
                 break;
 
             case '--versions':
                 $versionsToGenerate = array_map('trim', explode(',', $argv[++$i]));
+                break;
+
+            case '-vvv':
+                $verbosity = \Psr\Log\LogLevel::DEBUG;
+                $verbose = true;
+                break;
+            case '-vv':
+                $verbosity = \Psr\Log\LogLevel::INFO;
+                $verbose = true;
+                break;
+            case '-v':
+            case '--verbose':
+                $verbose = true;
                 break;
         }
     }
@@ -265,6 +290,9 @@ echo sprintf(
     implode(', ', $versionsToGenerate)
 );
 
+$logger = $verbosity ? new \MyENA\DefaultLogger($verbosity) : null;
+
+// Download/prepare
 foreach ($versionsToGenerate as $version) {
     if (!isset($versions[$version])) {
         echo sprintf(
@@ -286,6 +314,10 @@ foreach ($versionsToGenerate as $version) {
     $zipFileName = $schemaPath.DIRECTORY_SEPARATOR.$version.'.zip';
 
     if (file_exists($zipFileName)) {
+        if ($keepInput) {
+            echo "Already exists; skipping\n";
+            continue;
+        }
         if ($forceDelete || yesno("ZIP \"{$zipFileName}\" already exists, ok to delete?")) {
             echo "Deleting {$zipFileName} ...\n";
             unlink($zipFileName);
@@ -316,7 +348,7 @@ foreach ($versionsToGenerate as $version) {
         }
     }
 
-    if (!mkdir($schemaDir, 0777, true)) {
+    if (!mkdir($schemaDir, 0777, true) && !is_dir($schemaDir)) {
         echo "Unable to create directory \"{$schemaDir}\. Exiting\n";
         exit(1);
     }
@@ -324,6 +356,11 @@ foreach ($versionsToGenerate as $version) {
     // Extract Zip
     $zip->extractTo($schemaDir);
     $zip->close();
+}
+
+// Generation
+foreach ($versionsToGenerate as $version) {
+    $schemaDir = $schemaPath.DIRECTORY_SEPARATOR.$version;
 
     echo sprintf(
         'Generating "%s" into %s%s%s',
@@ -332,11 +369,12 @@ foreach ($versionsToGenerate as $version) {
         str_replace('\\', DIRECTORY_SEPARATOR, $namespace),
         PHP_EOL
     );
+
     $config = new Config([
         'xsdPath'         => $schemaDir,
         'outputPath'      => $classesPath,
         'outputNamespace' => $namespace,
-    ]);
+    ], $logger);
 
     $generator = new Generator($config);
     $generator->generate();
