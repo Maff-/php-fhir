@@ -92,7 +92,7 @@ abstract class XSDMapGenerator {
                     $attrArray[] = sprintf('%s : %s', $attribute->getName(), (string)$attribute);
                 }
                 $config->getLogger()
-                    ->debug(sprintf('Unable to locate "name" attribute on element in file "%s" with attributes ["%s"]',
+                    ->warning(sprintf('Unable to locate "name" attribute on element in file "%s" with attributes ["%s"]',
                         $file,
                         implode('", "', $attrArray)));
                 continue;

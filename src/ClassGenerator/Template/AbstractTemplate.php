@@ -24,7 +24,7 @@
  */
 abstract class AbstractTemplate {
     /** @var array */
-    protected $documentation;
+    protected $documentation = array();
 
     /**
      * @return array
@@ -65,16 +65,30 @@ abstract class AbstractTemplate {
 
     /**
      * @param int $spaces
+     * @param int $maxWidth
+     * @param int $tabSize
      * @return string
      */
-    protected function getDocBlockDocumentationFragment($spaces = 5) {
+    protected function getDocBlockDocumentationFragment($spaces = 5, $maxWidth = 120, $tabSize = 4) {
+        if (empty($this->documentation)) {
+            return '';
+        }
+
         $output = '';
-        $spaces = str_repeat(' ', $spaces);
-        if (isset($this->documentation)) {
-            foreach ($this->documentation as $doc) {
-                $output = sprintf("%s%s* %s\n", $output, $spaces, $doc);
+        $spacing = str_repeat(' ', $spaces);
+        foreach ($this->documentation as $doc) {
+            $doc = rtrim(str_replace(["\r\n", "\t"], ["\n", $tabSize], $doc));
+            $doc = wordwrap($doc, $maxWidth - $spaces - 2); // 2 = strlen('* ')
+            foreach (explode("\n", $doc) as $line) {
+                $output .= sprintf("%s* %s\n", $spacing, rtrim($line));
             }
         }
+
         return $output;
+    }
+
+    protected function trimTrailingSpaces($string)
+    {
+        return implode("\n", array_map('rtrim', explode("\n", $string)));
     }
 }

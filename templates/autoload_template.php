@@ -17,7 +17,9 @@
  */
 
 return <<<STRING
-<?php namespace %s;
+<?php
+
+namespace %s;
 
 %s
 
@@ -65,9 +67,11 @@ class PHPFHIRAutoloader
      */
     public static function loadClass(\$class)
     {
-        if (isset(self::\$_classMap[\$class]))
+        if (isset(self::\$_classMap[\$class])) {
             return (bool)require sprintf('%%s/%%s', self::ROOT_DIR, self::\$_classMap[\$class]);
+        }
         return null;
     }
 }
+
 STRING;

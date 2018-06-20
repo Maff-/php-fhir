@@ -83,7 +83,7 @@ abstract class CopyrightUtils {
                 }
 
                 if ($inComment) {
-                    self::$_fhirCopyright[] = html_entity_decode($line);
+                    self::$_fhirCopyright[] = rtrim(html_entity_decode($line));
                 }
 
                 if ('<!--' === $line) {
@@ -109,8 +109,8 @@ abstract class CopyrightUtils {
 
         self::$_fullPHPFHIRCopyrightComment = sprintf(
             "/*!\n * %s\n *\n * FHIR Copyright Notice:\n *\n * %s\n */",
-            implode("\n * ", self::$_phpFHIRCopyright),
-            implode("\n * ", self::$_fhirCopyright)
+            rtrim(implode("\n * ", self::$_phpFHIRCopyright), " \t\0\x0B"),
+            rtrim(implode("\n * ", self::$_fhirCopyright), " \t\0\x0B")
         );
     }
 

@@ -19,6 +19,7 @@
 use DCarbone\PHPFHIR\ClassGenerator\Config;
 use DCarbone\PHPFHIR\ClassGenerator\Template\ClassTemplate;
 use DCarbone\PHPFHIR\ClassGenerator\Utilities\CopyrightUtils;
+use DCarbone\PHPFHIR\ClassGenerator\Utilities\VarExportUtils;
 
 /**
  * Class AutoloaderTemplate
@@ -69,7 +70,7 @@ class AutoloaderTemplate extends AbstractPHPFHIRClassTemplate {
             include PHPFHIR_TEMPLATE_DIR . '/autoload_template.php',
             $this->outputNamespace,
             CopyrightUtils::getBasePHPFHIRCopyrightComment(),
-            var_export($this->_classMap, true)
+            VarExportUtils::prettyVarExport($this->_classMap, ['indent' => '    '])
         );
     }
 

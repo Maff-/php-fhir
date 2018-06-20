@@ -17,7 +17,9 @@
  */
 
 return <<<STRING
-<?php namespace %s;
+<?php
+
+namespace %s;
 
 %s
 
@@ -103,4 +105,5 @@ class PHPFHIRParserMap implements \ArrayAccess, \Iterator
         return key(\$this->_bigDumbMap) !== null;
     }
 }
+
 STRING;

@@ -20,6 +20,7 @@ use DCarbone\PHPFHIR\ClassGenerator\Config;
 use DCarbone\PHPFHIR\ClassGenerator\Template\ClassTemplate;
 use DCarbone\PHPFHIR\ClassGenerator\Template\Method\SetterMethodTemplate;
 use DCarbone\PHPFHIR\ClassGenerator\Utilities\CopyrightUtils;
+use DCarbone\PHPFHIR\ClassGenerator\Utilities\VarExportUtils;
 
 /**
  * Class ParserMapTemplate
@@ -75,7 +76,7 @@ class ParserMapTemplate extends AbstractPHPFHIRClassTemplate {
             include PHPFHIR_TEMPLATE_DIR.'/parser_map_template.php',
             $this->outputNamespace,
             CopyrightUtils::getBasePHPFHIRCopyrightComment(),
-            var_export($this->_bigDumbMap, true)
+            VarExportUtils::prettyVarExport($this->_bigDumbMap, ['indent' => '    '])
         );
     }
 

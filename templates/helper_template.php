@@ -17,12 +17,14 @@
  */
 
 return <<<STRING
-<?php namespace %s;
+<?php
+
+namespace %s;
 
 %s
 
-class PHPFHIRHelper {
-
+class PHPFHIRHelper
+{
     public static function recursiveXMLImport(\\SimpleXMLElement \$sxe, \$data) {
         \$new = simplexml_load_string((string)\$data, '\\SimpleXMLElement', LIBXML_NOEMPTYTAG);
 
@@ -53,4 +55,5 @@ class PHPFHIRHelper {
         }
     }
 }
+
 STRING;

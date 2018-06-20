@@ -182,7 +182,11 @@ class BaseMethodTemplate extends AbstractTemplate {
      * @return string
      */
     protected function buildDocBlock() {
-        $output = sprintf("    /**\n%s", $this->getDocBlockDocumentationFragment());
+        $doc = $this->getDocBlockDocumentationFragment();
+        $output = sprintf("    /**\n%s", $doc);
+        if ($doc) {
+            $output .= "     *\n";
+        }
 
         foreach ($this->getParameters() as $param) {
             $output = sprintf(
@@ -200,7 +204,7 @@ class BaseMethodTemplate extends AbstractTemplate {
      */
     protected function buildMethodDefinition() {
         return sprintf(
-            "    %s function %s(%s) {\n%s    }\n\n",
+            "    %s function %s(%s)\n    {\n%s    }\n\n",
             (string)$this->getScope(),
             $this->getName(),
             $this->buildMethodParameterDefinition(),

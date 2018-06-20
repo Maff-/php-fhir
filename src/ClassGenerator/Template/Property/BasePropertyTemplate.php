@@ -19,6 +19,7 @@
 use DCarbone\PHPFHIR\ClassGenerator\Enum\PHPScopeEnum;
 use DCarbone\PHPFHIR\ClassGenerator\Template\AbstractTemplate;
 use DCarbone\PHPFHIR\ClassGenerator\Utilities\NameUtils;
+use DCarbone\PHPFHIR\ClassGenerator\Utilities\VarExportUtils;
 
 /**
  * Class PropertyTemplate
@@ -227,9 +228,14 @@ class BasePropertyTemplate extends AbstractTemplate {
      * @return string
      */
     public function compileTemplate() {
+        $doc = $this->getDocBlockDocumentationFragment();
+        if ($doc) {
+            $doc = rtrim($doc) . "\n     *\n";
+        }
+
         return sprintf(
             "    /**\n%s     * @var %s%s%s\n     */\n    %s %s = %s;\n\n",
-            $this->getDocBlockDocumentationFragment(),
+            $doc,
             $this->isPrimitive() || $this->isList() ? '' : '\\',
             $this->getPHPType(),
             ($this->isCollection() ? '[]' : ''),
@@ -257,7 +263,7 @@ class BasePropertyTemplate extends AbstractTemplate {
                 return ($default ? 'true' : 'false');
 
             case 'array':
-                return var_export($default, true);
+                return VarExportUtils::prettyVarExport($default);
 
             default:
                 return 'null';

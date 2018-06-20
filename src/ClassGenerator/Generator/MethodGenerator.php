@@ -51,17 +51,17 @@ abstract class MethodGenerator {
             $method->addLineToBody('} else {');
             $method->addLineToBody('    parent::__construct($data);');
             $method->addLineToBody('}');
-        } else if ('ResourceContainer' === $class->getElementName()) {
+        } elseif ('ResourceContainer' === $class->getElementName()) {
             $method->addBlockToBody(<<<PHP
 if (is_object(\$data)) {
     \$this->{sprintf('set%s', substr(strrchr(get_class(\$data), 'FHIR'), 4))}(\$data);
-} else if (is_array(\$data)) {
+} elseif (is_array(\$data)) {
     if (1 === (\$cnt = count(\$data))) {
         \$this->{sprintf('set%s', key(\$data))}(reset(\$data));
-    } else if (1 < \$cnt) {
+    } elseif (1 < \$cnt) {
         throw new \InvalidArgumentException(sprintf('ResourceContainers may only contain 1 object, "%d" values provided', \$cnt));
     }
-} else if (null !== \$data) {
+} elseif (null !== \$data) {
     throw new \\InvalidArgumentException('\$data expected to be object or array, saw '.gettype(\$data));
 }
 PHP
@@ -81,7 +81,7 @@ PHP
                 $method->addLineToBody('    if (isset($data[\''.$name.'\'])) {');
                 if (in_array($name, $collections, true)) {
                     $method->addLineToBody('        if (is_array($data[\''.$name.'\'])) {');
-                    $method->addLineToBody('            foreach($data[\''.$name.'\'] as $d) {');
+                    $method->addLineToBody('            foreach ($data[\''.$name.'\'] as $d) {');
                     $method->addLineToBody('                $this->add'.ucfirst($name).'($d);');
                     $method->addLineToBody('            }');
                     $method->addLineToBody('        } else {');
@@ -96,7 +96,7 @@ PHP
                 }
                 $method->addLineToBody('    }');
             }
-            $method->addLineToBody('} else if (null !== $data) {');
+            $method->addLineToBody('} elseif (null !== $data) {');
             $method->addLineToBody('    throw new \\InvalidArgumentException(\'$data expected to be array of values, saw "\'.gettype($data).\'"\');');
             $method->addLineToBody('}');
             if ($class->getExtendedElementMapEntry()) {
@@ -145,7 +145,7 @@ PHP
                     $class->addImport(NSUtils::generateRootNamespace($config, 'FHIRResourceContainer'));
                     $method->addLineToBody("if (count(\$this->{$property->getName()}) > 0) { ");
                     $method->addLineToBody('    $resources = [];');
-                    $method->addLineToBody("    foreach(\$this->{$property->getName()} as \$container) {");
+                    $method->addLineToBody("    foreach (\$this->{$property->getName()} as \$container) {");
                     $method->addLineToBody('        if ($container instanceof FHIRResourceContainer) {');
                     $method->addLineToBody('            $resources[] = $container->jsonSerialize();');
                     $method->addLineToBody('        }');
@@ -235,7 +235,6 @@ PHP
      */
     public static function implementJsonSerialize(Config $config, ClassTemplate $class) {
         $method = new BaseMethodTemplate($config, 'jsonSerialize');
-        $class->addMethod($method);
 
         $properties = $class->getProperties();
 
@@ -316,7 +315,7 @@ PHP
                             '    $json[\'%s\'] = [];',
                             $name
                         ));
-                        $method->addLineToBody(sprintf('    foreach($this->%1$s as $%1$s) {', $name));
+                        $method->addLineToBody(sprintf('    foreach ($this->%1$s as $%1$s) {', $name));
                         $method->addLineToBody(sprintf(
                             '        if (null !== $%1$s) $json[\'%1$s\'][] = $%1$s;',
                             $name
@@ -345,6 +344,13 @@ PHP
                 $method->setReturnStatement('$json');
             }
         }
+
+        // Skip adding jsonSerialize method when it does nothing else than returning the parents result
+        if ($method->getBody() === ['$json = parent::jsonSerialize();']) {
+            return;
+        }
+
+        $class->addMethod($method);
     }
 
     /**
@@ -412,7 +418,7 @@ PHP
                         $first = false;
                     } else {
                         $method->addLineToBody(sprintf(
-                            'else if (isset($this->%s)) $this->%s->xmlSerialize(true, $sxe->addChild(\'%s\'));',
+                            'elseif (isset($this->%s)) $this->%s->xmlSerialize(true, $sxe->addChild(\'%s\'));',
                             $name,
                             $name,
                             $name
@@ -451,7 +457,7 @@ PHP
                             $name
                         ));
                         $method->addLineToBody(sprintf(
-                            '    foreach($this->%s as $%s) {',
+                            '    foreach ($this->%s as $%s) {',
                             $name,
                             $name
                         ));

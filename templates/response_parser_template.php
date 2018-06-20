@@ -17,7 +17,9 @@
  */
 
 return <<<STRING
-<?php namespace %s;
+<?php
+
+namespace %s;
 
 %s
 
@@ -326,4 +328,5 @@ class PHPFHIRResponseParser
         \$autoloaderClass::register();
     }
 }
+
 STRING;

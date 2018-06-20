@@ -291,7 +291,7 @@ class ClassTemplate extends AbstractTemplate {
         if ('' === $ns) {
             $output = "<?php\n\n";
         } else {
-            $output = sprintf("<?php namespace %s;\n\n", $ns);
+            $output = sprintf("<?php\n\nnamespace %s;\n\n", $ns);
         }
 
         $output = sprintf(
@@ -350,7 +350,7 @@ class ClassTemplate extends AbstractTemplate {
             $output = sprintf('%s%s', $output, (string)$method);
         }
 
-        return sprintf("%s\n}", $output);
+        return sprintf("%s\n}\n", $this->trimTrailingSpaces(rtrim($output)));
     }
 
     /**
